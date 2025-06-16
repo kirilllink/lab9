@@ -31,52 +31,52 @@ void print_services_table(Service *services, int size) {
 // Режим интерактивного поиска: выбирается алгоритм, генерируется таблица, затем выполняется поиск с засечением времени.
 void interactive_mode() {
     int size;
-    printf("Введите количество сервисов для генерации: ");
+    printf("Enter the number of services to generate: ");
     if (scanf("%d", &size) != 1 || size <= 0) {
-        fprintf(stderr, "Ошибка ввода количества сервисов.\n");
+        fprintf(stderr, "Invalid input for number of services.\n");
         exit(1);
     }
-    
-    // Генерация массива сервисов
+
+    // Generate array of services
     Service *services = generate_random_service_array(size);
-    
-    // Вывод сгенерированной таблицы сервисов
-    printf("\nСгенерированная таблица сервисов:\n");
+
+    // Print generated services table
+    printf("\nGenerated services table:\n");
     print_services_table(services, size);
-    
-    // Выбор алгоритма поиска
+
+    // Choose search algorithm
     int algo_choice;
-    printf("\nВыберите алгоритм поиска:\n");
-    printf("1. Линейный поиск\n");
-    printf("2. Двоичное дерево поиска (Binary)\n");
-    printf("3. Красно-чёрное дерево (RBTree)\n");
-    printf("Ваш выбор: ");
+    printf("\nChoose search algorithm:\n");
+    printf("1. Linear Search\n");
+    printf("2. Binary Search Tree (Binary)\n");
+    printf("3. Red-Black Tree (RBTree)\n");
+    printf("Your choice: ");
     if (scanf("%d", &algo_choice) != 1 || (algo_choice < 1 || algo_choice > 3)) {
-        fprintf(stderr, "Неверный выбор алгоритма.\n");
+        fprintf(stderr, "Invalid algorithm choice.\n");
         free(services);
         exit(1);
     }
-    
-    // Запрос ключа (service_name) для поиска
+
+    // Input search key (service_name)
     char key[MAX_STRING_LENGTH];
-    printf("\nВведите service_name для поиска: ");
+    printf("\nEnter service_name to search for: ");
     if (scanf("%s", key) != 1) {
-        fprintf(stderr, "Ошибка ввода ключа поиска.\n");
+        fprintf(stderr, "Error reading search key.\n");
         free(services);
         exit(1);
     }
-    
+
     clock_t start, end;
     double elapsed;
     Service *found = NULL;
-    
+
     if (algo_choice == 1) {
         start = clock();
         found = linear_search(services, size, key);
         end = clock();
     } else if (algo_choice == 2) {
         BinaryNode *Binary_root = NULL;
-        // Построение дерева
+        // Build Binary Search Tree
         for (int i = 0; i < size; i++) {
             Binary_insert(&Binary_root, &services[i]);
         }
@@ -86,7 +86,7 @@ void interactive_mode() {
         Binary_free(Binary_root);
     } else if (algo_choice == 3) {
         RBNode *rb_root = NULL;
-        // Построение дерева
+        // Build Red-Black Tree
         for (int i = 0; i < size; i++) {
             rb_insert(&rb_root, &services[i]);
         }
@@ -95,12 +95,12 @@ void interactive_mode() {
         end = clock();
         rb_free(rb_root);
     }
-    
+
     elapsed = (double)(end - start) / CLOCKS_PER_SEC;
-    
-    // Вывод результата поиска в виде таблицы
+
+    // Display search result in table format
     if (found) {
-        printf("\nНайденное первое вхождение сервиса:\n");
+        printf("\nFirst matching service found:\n");
         printf("--------------------------------------------------------------------------------\n");
         printf("| %-15s | %-15s | %-7s | %-8s | %-15s |\n",
                "Service Name", "Service Type", "Cost", "Duration", "Master Name");
@@ -113,30 +113,31 @@ void interactive_mode() {
                found->master_name);
         printf("--------------------------------------------------------------------------------\n");
     } else {
-        printf("\nСервис с названием \"%s\" не найден.\n", key);
+        printf("\nService name \"%s\" was not found.\n", key);
     }
-    
-    printf("Время поиска: %.8f сек.\n", elapsed);
+
+    printf("Search time: %.8f sec.\n", elapsed);
     free(services);
 }
+
 
 
 void benchmark_mode() {
     int sizes[NUM_BENCH_SIZES] = {100, 1000, 10000, 50000, 100000, 200000, 300000};
     
-    // Открываем CSV-файл для записи
+    // Open CSV file for writing
     FILE *fp = fopen("benchmark.csv", "w");
     if (!fp) {
-        fprintf(stderr, "Ошибка открытия файла benchmark.csv для записи.\n");
+        fprintf(stderr, "Error opening benchmark.csv for writing.\n");
         exit(1);
     }
     
-    // Записываем заголовок CSV
-    fprintf(fp, "Размер,Линейный (сек),Binary (сек),RBTree (сек)\n");
+    // Write CSV header
+    fprintf(fp, "Size,Linear (sec),Binary (sec),RBTree (sec)\n");
     
-    printf("\nБенчмарк поиска сервисов по Service Name\n");
-    printf("Для каждого размера выполняется %d итераций поиска случайных ключей, результат усредняется.\n", NUM_ITER);
-    printf("Размер\tЛинейный (сек)\tBinary (сек)\tRBTree (сек)\n");
+    printf("\nBenchmark: Searching services by Service Name\n");
+    printf("Each size will run %d iterations of random key searches; the result is averaged.\n", NUM_ITER);
+    printf("Size\tLinear (sec)\tBinary (sec)\tRBTree (sec)\n");
     printf("----------------------------------------------------------------\n");
     
     for (int i = 0; i < NUM_BENCH_SIZES; i++) {
@@ -196,20 +197,20 @@ void benchmark_mode() {
     }
     
     fclose(fp);
-    printf("\nРезультаты бенчмарка сохранены в файл benchmark.csv\n");
+    printf("\nThe results have been saved in the benchmark.csv\n");
 }
 
 int main(void) {
     // Инициализация генератора случайных чисел
-    srandom((unsigned) time(NULL));
+    srand((unsigned) time(NULL));
     
     int mode;
-    printf("Выберите режим работы:\n");
-    printf("1. Интерактивный поиск\n");
-    printf("2. Бенчмарк\n");
-    printf("Ваш выбор: ");
+    printf("Choose the way of going:\n");
+    printf("1. Interactive search\n");
+    printf("2. Benchmark\n");
+    printf("Your choice: ");
     if (scanf("%d", &mode) != 1) {
-        fprintf(stderr, "Ошибка ввода режима.\n");
+        fprintf(stderr, "Error input.\n");
         exit(1);
     }
     
@@ -218,7 +219,7 @@ int main(void) {
     } else if (mode == 2) {
         benchmark_mode();
     } else {
-        printf("Неверный режим.\n");
+        printf("Invalid input of choice.\n");
     }
     
     return 0;
